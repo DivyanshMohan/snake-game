@@ -1,0 +1,114 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Define colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+# Set the width and height of the game window
+window_width = 600
+window_height = 400
+window_size = (window_width, window_height)
+window = pygame.display.set_mode(window_size)
+pygame.display.set_caption("Snake Game")
+
+# Set the clock for the game
+clock = pygame.time.Clock()
+
+# Set the size of each snake segment and the space between them
+segment_size = 20
+segment_space = 1
+
+# Set the initial position of the snake
+snake_x = window_width / 2
+snake_y = window_height / 2
+
+# Set the initial speed and direction of the snake
+snake_speed = 1
+snake_dx = snake_speed
+snake_dy = 0
+
+# Create the snake segments
+snake_segments = []
+snake_length = 1
+
+# Set the initial position of the food
+food_x = random.randint(0, window_width - segment_size) // segment_size * segment_size
+food_y = random.randint(0, window_height - segment_size) // segment_size * segment_size
+
+# Set the initial score
+score = 0
+
+# Main game loop
+running = True
+while running:
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and snake_dy != snake_speed:
+                snake_dx = 0
+                snake_dy = -snake_speed
+            elif event.key == pygame.K_DOWN and snake_dy != -snake_speed:
+                snake_dx = 0
+                snake_dy = snake_speed
+            elif event.key == pygame.K_LEFT and snake_dx != snake_speed:
+                snake_dx = -snake_speed
+                snake_dy = 0
+            elif event.key == pygame.K_RIGHT and snake_dx != -snake_speed:
+                snake_dx = snake_speed
+                snake_dy = 0
+
+    # Update snake position
+    snake_x += snake_dx * segment_size
+    snake_y += snake_dy * segment_size
+
+    # Check for collision with the food
+    if snake_x == food_x and snake_y == food_y:
+        food_x = random.randint(0, window_width - segment_size) // segment_size * segment_size
+        food_y = random.randint(0, window_height - segment_size) // segment_size * segment_size
+        score += 1
+        snake_length += 1
+
+    # Check for collision with the snake's body
+    if (snake_x, snake_y) in snake_segments[:-1]:
+        running = False
+
+    # Check for collision with the game window boundaries
+    if snake_x < 0 or snake_x >= window_width or snake_y < 0 or snake_y >= window_height:
+        running = False
+
+    # Update snake segments
+    snake_segments.append((snake_x, snake_y))
+    if len(snake_segments) > snake_length:
+        del snake_segments[0]
+
+    # Rendering
+    window.fill(BLACK)
+
+    # Draw snake segments
+    for segment in snake_segments:
+        pygame.draw.rect(window, GREEN, (segment[0], segment[1], segment_size, segment_size))
+
+    # Draw food
+    pygame.draw.rect(window, RED, (food_x, food_y, segment_size, segment_size))
+
+    # Display score
+    font = pygame.font.Font(None, 36)
+    text = font.render("Score: " + str(score), True, WHITE)
+    window.blit(text, (10, 10))
+
+    # Update the game display
+    pygame.display.flip()
+
+    # Set the frame rate of the game
+    clock.tick(10)
+
+# Quit the game
+pygame.quit()
